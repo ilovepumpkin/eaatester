@@ -1,0 +1,7 @@
+{
+  "CPUUsage" : {
+    "$is" : "node",
+    "$type" : "number",
+    "?value" : 4
+  }
+}
