@@ -11,15 +11,20 @@ import org.dsa.iot.dslink.node.NodeBuilder;
 import org.dsa.iot.dslink.node.value.Value;
 import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.Objects;
-import eaa.tester.dslink.MockDevDsLink;
+
+import com.google.common.eventbus.EventBus;
+
+import eaa.tester.dslink.DataDsLink;
+import eaa.tester.event.DataLineChangeEvent;
+import eaa.tester.event.EAAEventBus;
 
 
 public class EAATester {
 	
-	private static Consumer<MockDevDsLink> createSimpleLinkBuilder(List<Integer> data) {
-		Consumer<MockDevDsLink> builder = new Consumer<MockDevDsLink>() {
+	private static Consumer<DataDsLink> createSimpleLinkBuilder(List<Integer> data) {
+		Consumer<DataDsLink> builder = new Consumer<DataDsLink>() {
 			@Override
-			public void accept(MockDevDsLink mockDevDsLink) {
+			public void accept(DataDsLink mockDevDsLink) {
 				DSLink dsLink = mockDevDsLink.getDSLink();
 				Node superRoot = dsLink.getNodeManager().getSuperRoot();
 
@@ -52,30 +57,9 @@ public class EAATester {
 	}
 
 	public static void main(String[] args) {
-		final List<Integer> data = new ArrayList();
-		data.add(1);
-		data.add(2);
-		data.add(3);
-		data.add(4);
-		final Consumer<MockDevDsLink> builder = createSimpleLinkBuilder(data);
-		MockDevDsLink dslink=new MockDevDsLink(builder);
-		new Thread(dslink).start();
-		new Thread(new Runnable(){
-			@Override
-			public void run() {
-				while(!dslink.isDone()){
-					try {
-						TimeUnit.SECONDS.sleep(1);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				System.out.println("### bye!");
-				System.exit(0);
-			}
-			
-		}).start();
+		
+
 	}
 
+	
 }

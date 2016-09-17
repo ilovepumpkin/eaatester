@@ -17,6 +17,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -80,6 +81,12 @@ public class MainGUI extends Application {
 		CheckBox loopInput=new CheckBox();
 		grid.add(loopInput, 1, 4);
 		
+		// automatic
+		grid.add(new Label("Automatic"), 0, 5);
+		CheckBox autoInput=new CheckBox();
+		autoInput.disableProperty().set(true);
+		grid.add(autoInput, 1, 5);
+		
 		// start button
 		Button btn = new Button("Start");
 		btn.setOnAction(new EventHandler<ActionEvent>() {
@@ -91,9 +98,16 @@ public class MainGUI extends Application {
 		HBox hbBtn = new HBox(10);
 		hbBtn.setAlignment(Pos.BOTTOM_RIGHT);
 		hbBtn.getChildren().add(btn);// 将按钮控件作为子节点
-		grid.add(hbBtn, 1, 5);// 将HBox pane放到grid中的第1列，第4行
+		grid.add(hbBtn, 1, 6);// 将HBox pane放到grid中的第1列，第4行
 
-		Scene scene = new Scene(grid, 600, 500);
+		
+		// table view
+		final TableView table=new TableView();
+		
+		VBox root=new VBox();
+		root.getChildren().addAll(grid,table);
+		
+		Scene scene = new Scene(root, 600, 500);
 
 		primaryStage.setTitle("EAA Tester");
 		primaryStage.setScene(scene);

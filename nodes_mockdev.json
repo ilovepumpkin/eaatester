@@ -3,5 +3,13 @@
     "$is" : "node",
     "$type" : "number",
     "?value" : 4
+  },
+  "EAATesterType" : {
+    "$name" : "EAATesterType",
+    "$is" : "node",
+    "$type" : "map",
+    "?value" : {
+      "value" : 9
+    }
   }
 }

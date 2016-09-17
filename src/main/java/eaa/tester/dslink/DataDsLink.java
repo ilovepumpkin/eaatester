@@ -1,6 +1,7 @@
 package eaa.tester.dslink;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -13,31 +14,36 @@ import org.dsa.iot.dslink.config.Configuration;
 import org.dsa.iot.dslink.connection.ConnectionType;
 import org.dsa.iot.dslink.handshake.LocalKeys;
 import org.dsa.iot.dslink.node.Node;
+import org.dsa.iot.dslink.node.NodeBuilder;
 import org.dsa.iot.dslink.node.value.Value;
+import org.dsa.iot.dslink.node.value.ValueType;
 import org.dsa.iot.dslink.util.PropertyReference;
 import org.dsa.iot.dslink.util.json.JsonObject;
 import org.dsa.iot.dslink.util.log.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eaa.tester.EdgeDsaTestHelper;
+import com.google.common.eventbus.Subscribe;
 
-enum Status {
-	INITIALIZED, READY_GO, DONE
+import eaa.tester.EdgeDsaTestHelper;
+import eaa.tester.data.DataLine;
+import eaa.tester.event.DataLineChangeEvent;
+
+enum NODE_STATUS {
+	NOT_INITIALIZED, INITIALIZED, DONE
 }
 
-public class MockDevDsLink extends DSLinkHandler implements Runnable {
+public class DataDsLink extends DSLinkHandler implements Runnable {
 
-	private static final Logger LOGGER = LoggerFactory
-			.getLogger(MockDevDsLink.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(DataDsLink.class);
 
-	private Status status;
+	private NODE_STATUS status = NODE_STATUS.NOT_INITIALIZED;
 
 	private String devName;
 
 	private String devType;
 
-	private Consumer<MockDevDsLink> linkBuilder;
+	private Consumer<DataDsLink> linkBuilder;
 
 	private DSLink dsLink;
 
@@ -48,6 +54,8 @@ public class MockDevDsLink extends DSLinkHandler implements Runnable {
 
 	public static final String ATTR_DEVICE_TYPE_NAME = "devicetype";
 
+	private Node dataNode;
+
 	public void setAttributes(Node node) {
 		node.setAttribute(ATTR_TYPE_NAME, new Value(ATTR_TYPE_VALUE));
 		node.setAttribute(ATTR_DEVICE_TYPE_NAME, new Value(getDevType()));
@@ -57,16 +65,16 @@ public class MockDevDsLink extends DSLinkHandler implements Runnable {
 		return dsLink;
 	}
 
-	public Status getStatus() {
+	public NODE_STATUS getStatus() {
 		return status;
 	}
 
 	public void done() {
-		this.status = Status.DONE;
+		this.status = NODE_STATUS.DONE;
 	}
-	
-	public boolean isDone(){
-		return this.status == Status.DONE;
+
+	public boolean isDone() {
+		return this.status == NODE_STATUS.DONE;
 	}
 
 	@Override
@@ -82,7 +90,7 @@ public class MockDevDsLink extends DSLinkHandler implements Runnable {
 		String brokerHost = EdgeDsaTestHelper.getDSBrockerUrl();
 		String keyPath = "mockdev.key";
 		String nodePath = "nodes_mockdev.json";
-		String handlerClass = this.getClass().getName(); 
+		String handlerClass = this.getClass().getName();
 
 		String prop = System.getProperty(PropertyReference.VALIDATE, "true");
 		boolean validate = Boolean.parseBoolean(prop);
@@ -122,7 +130,12 @@ public class MockDevDsLink extends DSLinkHandler implements Runnable {
 	@Override
 	public void onResponderInitialized(DSLink link) {
 		this.dsLink = link;
-		linkBuilder.accept(this);
+		// linkBuilder.accept(this);
+		Node root = link.getNodeManager().getSuperRoot();
+		root.setAttribute("type", new Value("device"));
+		root.setAttribute("devicetype", new Value("EngineSensors"));
+		addNodes(root);
+		this.status = NODE_STATUS.INITIALIZED;
 		LOGGER.info("Responder initialized");
 	}
 
@@ -141,22 +154,27 @@ public class MockDevDsLink extends DSLinkHandler implements Runnable {
 		return true;
 	}
 
-	public MockDevDsLink(Consumer<MockDevDsLink> linkBuilder) {
+	public DataDsLink() {
+		super();
+		this.devName = "EAATester";
+		setProvider(DSLinkFactory.generate(this));
+	}
+
+	public DataDsLink(Consumer<DataDsLink> linkBuilder) {
 		this.devName = NAME_PREFIX + new Random().nextInt();
 		this.devType = devName + "-Type";
 		setProvider(DSLinkFactory.generate(this));
 		this.linkBuilder = linkBuilder;
 	}
 
-	public MockDevDsLink(String devName, Consumer<MockDevDsLink> linkBuilder) {
+	public DataDsLink(String devName, Consumer<DataDsLink> linkBuilder) {
 		this.devName = devName;
 		this.devType = devName + "-Type";
 		setProvider(DSLinkFactory.generate(this));
 		this.linkBuilder = linkBuilder;
 	}
 
-	public MockDevDsLink(String devName, String devType,
-			Consumer<MockDevDsLink> linkBuilder) {
+	public DataDsLink(String devName, String devType, Consumer<DataDsLink> linkBuilder) {
 		this.devName = devName;
 		this.devType = devType;
 		setProvider(DSLinkFactory.generate(this));
@@ -173,37 +191,74 @@ public class MockDevDsLink extends DSLinkHandler implements Runnable {
 
 	/**
 	 * clear all children of a dslink node
+	 * 
 	 * @param node
 	 */
-	public synchronized void clearChildrenNodes(){
-//		dsLink.getLinkHandler().getProvider().stop();
-//		dsLink.getLinkHandler().getProvider().start();
+	public synchronized void clearChildrenNodes() {
+		// dsLink.getLinkHandler().getProvider().stop();
+		// dsLink.getLinkHandler().getProvider().start();
 
 		DSLink dsLink = getDSLink();
 		Node superRoot = dsLink.getNodeManager().getSuperRoot();
 		superRoot.clearChildren();
 	}
-	
+
 	@Override
 	public void run() {
 		new Thread() {
 			@Override
 			public void run() {
-				
-				while (status != Status.DONE) {
+				while (status != NODE_STATUS.DONE) {
 					try {
-						System.out.println(">>>>>"+status);
 						TimeUnit.SECONDS.sleep(1);
 					} catch (InterruptedException e) {
 						throw new RuntimeException(e);
 					}
 				}
-				System.out.println(">>>>>"+status);
 				getProvider().stop();
 			}
 		}.start();
 		getProvider().start();
-		status = Status.INITIALIZED;
+		status = NODE_STATUS.INITIALIZED;
 		getProvider().sleep();
+	}
+
+	/*
+	 * ==========================
+	 */
+
+	public void start() {
+		new Thread(this).start();
+		while (!isReady()) {
+			try {
+				TimeUnit.SECONDS.sleep(1);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void stop() {
+		this.status = NODE_STATUS.DONE;
+	}
+
+	public boolean isReady() {
+		return this.status == NODE_STATUS.INITIALIZED;
+	}
+
+	private void addNodes(Node superRoot) {
+		NodeBuilder builder = superRoot.createChild("EAATesterType");
+		builder.setDisplayName("EAATesterType");
+		builder.setValueType(ValueType.MAP);
+		dataNode = builder.build();
+
+	}
+
+	@Subscribe
+	public void handleDataChange(DataLineChangeEvent dataEvent) {
+		DataLine dl=dataEvent.getDataLine();
+		LOGGER.info("Data line: {}",dl);
+		dataNode.setValue(new Value(dl));
 	}
 }
