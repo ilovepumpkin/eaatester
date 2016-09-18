@@ -219,7 +219,6 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 			}
 		}.start();
 		getProvider().start();
-		status = NODE_STATUS.INITIALIZED;
 		getProvider().sleep();
 	}
 
@@ -229,13 +228,16 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 
 	public void start() {
 		new Thread(this).start();
-		while (!isReady()) {
+	    int tryCount=5;
+		while (!isReady() && tryCount-->0) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
+		}
+		if(tryCount<=0){
+			throw new RuntimeException("The dslink was not started within the given time.");
 		}
 	}
 

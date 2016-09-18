@@ -16,13 +16,11 @@ import eaa.tester.data.DataLine;
 import eaa.tester.data.TSDataLine;
 import eaa.tester.data.provider.DataProvider;
 import eaa.tester.data.provider.DataProviderFactory;
-
+import eas.tester.util.TestUtils;
+import static eas.tester.util.TestUtils.*
+;
 public class DataProviderTest {
 	private Configuration c = Configuration.getInstance();
-
-	private String getFilePath(String fileName) {
-		return Resources.getResource(fileName).getFile();
-	}
 	
 	private String[][] getExpectedData(){
 		return new String[][] { { "Tom", "11" }, { "John", "30" }, { "Mike", "22" } };
@@ -34,7 +32,7 @@ public class DataProviderTest {
 
 	@Test
 	public void testSimpleFileDataProvider() {
-		c.setDataFilePath(getFilePath("simple.csv"));
+		c.setDataFilePath(getDataFilePath("simple.csv"));
 		c.setInterval(2000);
 
 		final String[][] expectedData=getExpectedData();
@@ -56,7 +54,7 @@ public class DataProviderTest {
 	
 	@Test
 	public void testTimeSeriesFileDataProvider() {
-		c.setDataFilePath(getFilePath("timeseries.csv"));
+		c.setDataFilePath(getDataFilePath("timeseries.csv"));
 
 		final String[][] expectedData=getExpectedData();
 		final long[] tsData=getTimeSeriesData();
