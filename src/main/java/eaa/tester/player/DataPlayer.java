@@ -19,17 +19,17 @@ public class DataPlayer {
 	private int current;
 	private List<TSDataLine> dataList;
 	private int total;
-	private boolean isLoop;
+	private int loopCount;
 
 	public DataPlayer(DataProvider dlProvider) {
-		this(dlProvider, false);
+		this(dlProvider, 1);
 	}
 
-	public DataPlayer(DataProvider dlProvider, boolean enableLoop) {
+	public DataPlayer(DataProvider dlProvider, int loopCount) {
 		this.dlProvider = dlProvider;
 		dataList = this.dlProvider.getDataLines();
 		this.total = dataList.size();
-		this.isLoop = enableLoop;
+		this.loopCount=loopCount;
 	}
 
 	public boolean isTillEnd() {
@@ -55,7 +55,7 @@ public class DataPlayer {
 		}
 		eventBus.post(new DataLineChangeEvent(item.getDataLine()));
 		this.current += 1;
-		if(isTillEnd() && this.isLoop){
+		if(isTillEnd() && (--this.loopCount)>0){
 			this.current=0;
 		}
 	}

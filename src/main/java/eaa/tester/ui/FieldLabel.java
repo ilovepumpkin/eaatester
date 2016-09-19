@@ -7,6 +7,6 @@ import javafx.scene.text.TextAlignment;
 public class FieldLabel extends Label {
 	public FieldLabel(String label){
 		super(label);
-		setPrefWidth(100);
+		setPrefWidth(150);
 	}
 }

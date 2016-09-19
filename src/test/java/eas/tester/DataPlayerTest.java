@@ -84,21 +84,19 @@ public class DataPlayerTest {
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
 		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE);
-		DataPlayer player = new DataPlayer(dp,true);
+		final int loopCount=2;
+		DataPlayer player = new DataPlayer(dp,loopCount);
 		player.play();
-		TimeUnit.MILLISECONDS.sleep(1050);
+		TimeUnit.MILLISECONDS.sleep(1500);
 		player.stop();
 		ArrayList<HashMap<String,Object>> expectedList=new ArrayList<HashMap<String,Object>>();
-		expectedList.add(getExpected("Tom","11"));
-		expectedList.add(getExpected("John","30"));
-		expectedList.add(getExpected("Mike","22"));
-		expectedList.add(getExpected("Jim","50"));
-		expectedList.add(getExpected("Alex","38"));
-		expectedList.add(getExpected("Tom","11"));
-		expectedList.add(getExpected("John","30"));
-		expectedList.add(getExpected("Mike","22"));
-		expectedList.add(getExpected("Jim","50"));
-		expectedList.add(getExpected("Alex","38"));
+		for(int i=0;i<loopCount;i++){
+			expectedList.add(getExpected("Tom","11"));
+			expectedList.add(getExpected("John","30"));
+			expectedList.add(getExpected("Mike","22"));
+			expectedList.add(getExpected("Jim","50"));
+			expectedList.add(getExpected("Alex","38"));	
+		}
 		dataListener.assertAll(expectedList);
 		
 	}
