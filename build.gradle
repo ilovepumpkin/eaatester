@@ -13,7 +13,6 @@ repositories {
 dependencies {
     compile 'org.iot-dsa:dslink:0.14.1'
     compile 'com.google.guava:guava:19.0'
-    compile 'com.google.gson:gson:+'
 }
 
 tasks.withType(FindBugs) {
