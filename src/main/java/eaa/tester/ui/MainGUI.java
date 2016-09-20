@@ -4,8 +4,12 @@ import java.awt.Desktop;
 import java.awt.Paint;
 import java.io.File;
 
+import eaa.tester.conf.Configuration;
+import eaa.tester.data.provider.DataProviderFactory;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -39,6 +43,11 @@ public class MainGUI extends Application {
 	private BooleanProperty fileChooserVisibleProperty;
 	private BooleanProperty intervalVisibleProperty;
 	private BooleanProperty loopVisibleProperty;
+	private int dataSourceType = 0;
+	private StringProperty proxyUrlProperty;
+	private String filePath;
+	private ReadOnlyObjectProperty intervalProperty;
+	private ReadOnlyObjectProperty loopProperty;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -62,20 +71,17 @@ public class MainGUI extends Application {
 		VBox controlPanel = new VBox();
 		controlPanel.setPadding(new Insets(20));
 		controlPanel.setAlignment(Pos.TOP_CENTER);
-		
-		VBox fieldsVBox=new VBox();
+
+		VBox fieldsVBox = new VBox();
 		fieldsVBox.setSpacing(10);
 		fieldsVBox.setPadding(new Insets(20));
-		fieldsVBox.getChildren().addAll(dataSourceType, brokerUrl,
-				fileChooser, interval, loop);
-		//fieldsVBox.setStyle("-fx-border-color:red; -fx-background-color: blue;");
-		
-		controlPanel.getChildren().addAll(fieldsVBox,buttons);
-		
+		fieldsVBox.getChildren().addAll(dataSourceType, brokerUrl, fileChooser,
+				interval, loop);
+		// fieldsVBox.setStyle("-fx-border-color:red; -fx-background-color: blue;");
+
+		controlPanel.getChildren().addAll(fieldsVBox, buttons);
+
 		root.setTop(controlPanel);
-		VBox displayPanel = new VBox();
-		displayPanel.getChildren().add(buildTable());
-		root.setCenter(displayPanel);
 
 		Scene scene = new Scene(root, 600, 500);
 
@@ -84,27 +90,44 @@ public class MainGUI extends Application {
 		primaryStage.show();
 	}
 
-	private Node buildTable() {
-		final TableView table = new TableView();
-		return table;
+	private Configuration buildCfg() {
+		Configuration cfg = new Configuration();
+
+		cfg.setDataSourceType(dataSourceType);
+		cfg.setProxyUrl(proxyUrlProperty.get());
+		cfg.setDataFilePath(filePath);
+		cfg.setInterval(Integer
+				.parseInt(intervalProperty.getValue().toString()));
+		cfg.setLoopCount(Integer.parseInt(loopProperty.getValue().toString()));
+
+		return cfg;
+	}
+
+	public static String getDataSourceTypeLabel(int type) {
+		switch (type) {
+		case 0:
+			return "Simple file";
+		case 1:
+			return "Timeseries file";
+		case 2:
+			return "Manual input";
+		}
+		return null;
 	}
 
 	private Node buildButtons() {
-		Button btnAutoPlay = new Button("Play");
-		btnAutoPlay.setOnAction(new EventHandler<ActionEvent>() {
+		Button btnLaunch = new Button("Launch");
+		btnLaunch.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
-				System.out.println("hellworld");
+				new PlayWindow(buildCfg()).show();
 			}
 		});
-		Button btnNext = new Button("Next");
-		Button btnPause = new Button("Pause");
-		Button btnStop = new Button("Stop");
 		HBox hbBtn = new HBox();
 		hbBtn.setPrefHeight(50);
 		hbBtn.setSpacing(30);
 		hbBtn.setAlignment(Pos.BOTTOM_CENTER);
-		hbBtn.getChildren().addAll(btnAutoPlay, btnStop, btnPause, btnNext);// 将按钮控件作为子节点
+		hbBtn.getChildren().addAll(btnLaunch);// 将按钮控件作为子节点
 		return hbBtn;
 	}
 
@@ -114,6 +137,7 @@ public class MainGUI extends Application {
 		TextField proxyUrlInput = new TextField();
 		proxyUrlInput.setPrefWidth(300);
 		proxyUrlInput.setText("http://localhost:8080/conn");
+		proxyUrlProperty = proxyUrlInput.textProperty();
 		Button testConnBtn = new Button("Test Connection");
 		HBox proxyUrlHBox = new HBox();
 		proxyUrlHBox.getChildren().addAll(proxyUrlInput, testConnBtn);
@@ -131,9 +155,10 @@ public class MainGUI extends Application {
 			File file = fileChooser.showOpenDialog(win);
 			if (file != null) {
 				filePathLabel.setText(file.getAbsolutePath());
+				filePath = file.getAbsolutePath();
 			}
 		});
-		HBox hb = new HBox();
+		VBox hb = new VBox();
 		hb.getChildren().addAll(openButton, filePathLabel);
 		box.getChildren().add(hb);
 
@@ -160,6 +185,8 @@ public class MainGUI extends Application {
 		intervalVisibleProperty = box.visibleProperty();
 		box.managedProperty().bind(intervalVisibleProperty);
 
+		intervalProperty = intervalSpinner.valueProperty();
+
 		return box;
 	}
 
@@ -172,6 +199,8 @@ public class MainGUI extends Application {
 
 		loopVisibleProperty = box.visibleProperty();
 		box.managedProperty().bind(loopVisibleProperty);
+
+		loopProperty = loopSpinner.valueProperty();
 
 		return box;
 	}
@@ -187,6 +216,18 @@ public class MainGUI extends Application {
 		rbSimpleFile.setToggleGroup(group);
 		rbSimpleFile.setSelected(true);
 		rbSimpleFile.setPadding(new Insets(5));
+		rbSimpleFile.selectedProperty().addListener(
+				new ChangeListener<Boolean>() {
+					@Override
+					public void changed(
+							ObservableValue<? extends Boolean> observable,
+							Boolean oldValue, Boolean newValue) {
+						if (newValue) {
+							dataSourceType = DataProviderFactory.TYPE_SIMPLE_FILE;
+						}
+					}
+
+				});
 
 		// timeseries file
 		RadioButton rbTSFile = new RadioButton("Timeseries file");
@@ -198,6 +239,9 @@ public class MainGUI extends Application {
 			public void changed(ObservableValue<? extends Boolean> observable,
 					Boolean oldValue, Boolean newValue) {
 				intervalVisibleProperty.set(!newValue.booleanValue());
+				if (newValue) {
+					dataSourceType = DataProviderFactory.TYPE_TIMESERIES_FILE;
+				}
 			}
 
 		});
@@ -214,6 +258,9 @@ public class MainGUI extends Application {
 				intervalVisibleProperty.set(!newValue.booleanValue());
 				fileChooserVisibleProperty.set(!newValue.booleanValue());
 				loopVisibleProperty.set(!newValue.booleanValue());
+				if (newValue) {
+					dataSourceType = DataProviderFactory.TYPE_MANUAL;
+				}
 			}
 
 		});

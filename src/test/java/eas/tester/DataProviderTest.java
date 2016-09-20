@@ -20,7 +20,7 @@ import eas.tester.util.TestUtils;
 import static eas.tester.util.TestUtils.*
 ;
 public class DataProviderTest {
-	private Configuration c = Configuration.getInstance();
+	private Configuration c = new Configuration();
 	
 	private String[][] getExpectedData(){
 		return new String[][] { { "Tom", "11" }, { "John", "30" }, { "Mike", "22" } };
@@ -37,7 +37,7 @@ public class DataProviderTest {
 
 		final String[][] expectedData=getExpectedData();
 		
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
 		int i = 0;
 		final List<TSDataLine> dataLines = dp.getDataLines();
 		assertEquals(expectedData.length, dataLines.size());
@@ -59,7 +59,7 @@ public class DataProviderTest {
 		final String[][] expectedData=getExpectedData();
 		final long[] tsData=getTimeSeriesData();
 		
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_TIMESERIES_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_TIMESERIES_FILE,c);
 		int i = 0;
 		final List<TSDataLine> dataLines = dp.getDataLines();
 		assertEquals(expectedData.length, dataLines.size());

@@ -17,7 +17,7 @@ import eaa.tester.player.DataPlayer;
 import eas.tester.util.DataListener;
 
 public class DataPlayerTest {
-	private Configuration c = Configuration.getInstance();
+	private Configuration c = new Configuration();
 
 	private HashMap<String, Object> getExpected(String name, String age) {
 		return new HashMap<String, Object>() {
@@ -35,7 +35,7 @@ public class DataPlayerTest {
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
 		DataPlayer player = new DataPlayer(dp);
 		player.next();
 		dataListener.assertLast(getExpected("Tom", "11"));
@@ -54,7 +54,7 @@ public class DataPlayerTest {
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
 		DataPlayer player = new DataPlayer(dp);
 		player.play();
 		TimeUnit.MILLISECONDS.sleep(250);
@@ -83,7 +83,7 @@ public class DataPlayerTest {
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
 		final int loopCount=2;
 		DataPlayer player = new DataPlayer(dp,loopCount);
 		player.play();

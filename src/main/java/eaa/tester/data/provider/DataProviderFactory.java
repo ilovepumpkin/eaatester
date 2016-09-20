@@ -7,10 +7,10 @@ public class DataProviderFactory {
 
 	public static final int TYPE_SIMPLE_FILE = 0;
 	public static final int TYPE_TIMESERIES_FILE = 1;
+	public static final int TYPE_MANUAL = 2;
 
-	public static DataProvider getDataProvider(int type) {
+	public static DataProvider getDataProvider(int type, Configuration c) {
 		DataProvider provider = null;
-		final Configuration c = Configuration.getInstance();
 		switch (type) {
 		case TYPE_SIMPLE_FILE:
 			provider = new SimpleFileDataProvider(c);

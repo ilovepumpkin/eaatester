@@ -1,22 +1,22 @@
 package eaa.tester.conf;
 
 public class Configuration {
-	private static Configuration instance;
 	private String proxyUrl;
 	private String dataFilePath;
-	private long interval;
-	private boolean loop;
-	private boolean automatic;
-	
-	private Configuration() {
+	private int interval;
+	private int loopCount;
+	private int dataSourceType;
+
+	public Configuration() {
 		super();
 	}
 
-	public static Configuration getInstance() {
-		if(instance == null){
-			instance= new Configuration();
-		}
-		return instance;
+	public int getDataSourceType() {
+		return dataSourceType;
+	}
+
+	public void setDataSourceType(int dataSourceType) {
+		this.dataSourceType = dataSourceType;
 	}
 
 	public String getProxyUrl() {
@@ -35,28 +35,22 @@ public class Configuration {
 		this.dataFilePath = dataFilePath;
 	}
 
-	public long getInterval() {
+	public int getInterval() {
 		return interval;
 	}
 
-	public void setInterval(long interval) {
+	public void setInterval(int interval) {
 		this.interval = interval;
 	}
 
-	public boolean isLoop() {
-		return loop;
+	public int getLoopCount() {
+		return loopCount;
 	}
 
-	public void setLoop(boolean loop) {
-		this.loop = loop;
-	}
-
-	public boolean isAutomatic() {
-		return automatic;
-	}
-
-	public void setAutomatic(boolean automatic) {
-		this.automatic = automatic;
+	public void setLoopCount(int loopCount) {
+		this.loopCount = loopCount;
 	}
 	
+	
+
 }
