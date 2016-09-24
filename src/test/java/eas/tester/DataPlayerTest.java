@@ -35,7 +35,9 @@ public class DataPlayerTest {
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
+		c.setDataSourceType(DataProviderFactory.TYPE_SIMPLE_FILE);
+		
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
 		DataPlayer player = new DataPlayer(dp);
 		player.next();
 		dataListener.assertLast(getExpected("Tom", "11"));
@@ -54,7 +56,9 @@ public class DataPlayerTest {
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
+		c.setDataSourceType(DataProviderFactory.TYPE_SIMPLE_FILE);
+		
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
 		DataPlayer player = new DataPlayer(dp);
 		player.play();
 		TimeUnit.MILLISECONDS.sleep(250);
@@ -83,7 +87,9 @@ public class DataPlayerTest {
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
 		c.setInterval(100);
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
+		c.setDataSourceType(DataProviderFactory.TYPE_SIMPLE_FILE);
+		
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
 		final int loopCount=2;
 		DataPlayer player = new DataPlayer(dp,loopCount);
 		player.play();

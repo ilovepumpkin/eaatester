@@ -6,8 +6,10 @@ import java.io.File;
 
 import eaa.tester.conf.Configuration;
 import eaa.tester.data.provider.DataProviderFactory;
+import eaa.tester.exception.EAATesterException;
 import javafx.application.Application;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -48,6 +50,7 @@ public class MainGUI extends Application {
 	private String filePath;
 	private ReadOnlyObjectProperty intervalProperty;
 	private ReadOnlyObjectProperty loopProperty;
+	private ObjectProperty unitProperty;
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -96,8 +99,21 @@ public class MainGUI extends Application {
 		cfg.setDataSourceType(dataSourceType);
 		cfg.setProxyUrl(proxyUrlProperty.get());
 		cfg.setDataFilePath(filePath);
-		cfg.setInterval(Integer
-				.parseInt(intervalProperty.getValue().toString()));
+		
+		final int uiInterval=Integer
+				.parseInt(intervalProperty.getValue().toString());
+		final String unit=unitProperty.getValue().toString();
+		
+		int interval=0;
+		switch(unit){
+		case "Seconds":interval=uiInterval*1000;break;
+		case "Minutes":interval=uiInterval*60*1000;break;
+		case "Hours":interval=uiInterval*60*24*1000;break;
+		default:
+			throw new EAATesterException("Unknown unit: "+unit);
+		}
+		
+		cfg.setInterval(interval);
 		cfg.setLoopCount(Integer.parseInt(loopProperty.getValue().toString()));
 
 		return cfg;
@@ -186,6 +202,7 @@ public class MainGUI extends Application {
 		box.managedProperty().bind(intervalVisibleProperty);
 
 		intervalProperty = intervalSpinner.valueProperty();
+		unitProperty=unitInput.valueProperty();
 
 		return box;
 	}

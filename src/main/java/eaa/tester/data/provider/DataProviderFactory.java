@@ -9,9 +9,9 @@ public class DataProviderFactory {
 	public static final int TYPE_TIMESERIES_FILE = 1;
 	public static final int TYPE_MANUAL = 2;
 
-	public static DataProvider getDataProvider(int type, Configuration c) {
+	public static DataProvider getDataProvider(Configuration c) {
 		DataProvider provider = null;
-		switch (type) {
+		switch (c.getDataSourceType()) {
 		case TYPE_SIMPLE_FILE:
 			provider = new SimpleFileDataProvider(c);
 			break;

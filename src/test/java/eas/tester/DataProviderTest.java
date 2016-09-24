@@ -34,10 +34,11 @@ public class DataProviderTest {
 	public void testSimpleFileDataProvider() {
 		c.setDataFilePath(getDataFilePath("simple.csv"));
 		c.setInterval(2000);
+		c.setDataSourceType(DataProviderFactory.TYPE_SIMPLE_FILE);
 
 		final String[][] expectedData=getExpectedData();
 		
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_SIMPLE_FILE,c);
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
 		int i = 0;
 		final List<TSDataLine> dataLines = dp.getDataLines();
 		assertEquals(expectedData.length, dataLines.size());
@@ -55,11 +56,12 @@ public class DataProviderTest {
 	@Test
 	public void testTimeSeriesFileDataProvider() {
 		c.setDataFilePath(getDataFilePath("timeseries.csv"));
+		c.setDataSourceType(DataProviderFactory.TYPE_TIMESERIES_FILE);
 
 		final String[][] expectedData=getExpectedData();
 		final long[] tsData=getTimeSeriesData();
 		
-		DataProvider dp = DataProviderFactory.getDataProvider(DataProviderFactory.TYPE_TIMESERIES_FILE,c);
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
 		int i = 0;
 		final List<TSDataLine> dataLines = dp.getDataLines();
 		assertEquals(expectedData.length, dataLines.size());

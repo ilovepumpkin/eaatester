@@ -17,49 +17,12 @@ import com.google.common.eventbus.EventBus;
 import eaa.tester.dslink.DataDsLink;
 import eaa.tester.event.DataLineChangeEvent;
 import eaa.tester.event.EAAEventBus;
-
+import eaa.tester.ui.MainGUI;
 
 public class EAATester {
-	
-	private static Consumer<DataDsLink> createSimpleLinkBuilder(List<Integer> data) {
-		Consumer<DataDsLink> builder = new Consumer<DataDsLink>() {
-			@Override
-			public void accept(DataDsLink mockDevDsLink) {
-				DSLink dsLink = mockDevDsLink.getDSLink();
-				Node superRoot = dsLink.getNodeManager().getSuperRoot();
-
-				mockDevDsLink.setAttributes(superRoot);
-
-				NodeBuilder builder = superRoot.createChild("CPUUsage");
-				builder.setValueType(ValueType.NUMBER);
-				builder.setValue(new Value(0));
-				Node node = builder.build();
-
-				Objects.getThreadPool().submit(new Runnable() {
-					@Override
-					public void run() {
-						data.forEach(num -> {
-							System.out.println(">>>>"+num);
-							Value val = new Value(num);
-							node.setValue(val);
-							try {
-								TimeUnit.SECONDS.sleep(1);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
-						});
-						mockDevDsLink.done();
-					}
-				});
-			}
-		};
-		return builder;
-	}
 
 	public static void main(String[] args) {
-		
 
 	}
 
-	
 }
