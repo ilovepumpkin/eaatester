@@ -29,6 +29,27 @@ public class DataProviderTest {
 	private long[] getTimeSeriesData(){
 		return new long[]{5000,60*1000,3600*2*1000};
 	}
+	
+	@Test
+	public void testGetDeviceType(){
+		c.setDataFilePath(getDataFilePath("simple.csv"));
+		c.setDataSourceType(DataProviderFactory.TYPE_SIMPLE_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
+		assertEquals("simple",dp.getDeviceType());
+	}
+	
+	@Test
+	public void testGetFieldNames(){
+		c.setDataFilePath(getDataFilePath("timeseries.csv"));
+		c.setDataSourceType(DataProviderFactory.TYPE_TIMESERIES_FILE);
+		DataProvider dp = DataProviderFactory.getDataProvider(c);
+		final List<String> expected=new ArrayList<String>(){{
+			add("timeline");
+			add("name");
+			add("age");
+		}};
+		assertEquals(expected,dp.getFieldNames());
+	}
 
 	@Test
 	public void testSimpleFileDataProvider() {

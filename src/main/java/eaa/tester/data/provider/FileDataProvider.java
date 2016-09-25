@@ -20,14 +20,20 @@ public abstract class FileDataProvider implements DataProvider {
 	private String filePath;
 	private List<String> fieldNames;
 	private List<TSDataLine> dataLines;
+	private String deviceType;
 
 	public FileDataProvider(String filePath) {
 		this.filePath = filePath;
 		this.fieldNames=readFieldNames();
+		this.deviceType=readDeviceType();
 	}
 
 	public List<String> getFieldNames() {
 		return this.fieldNames;
+	}
+	
+	public String getDeviceType(){
+		return this.deviceType;
 	}
 	
 	protected abstract TSDataLine handleDataLine(DataLine dataLine);
@@ -36,9 +42,22 @@ public abstract class FileDataProvider implements DataProvider {
 		CharSource cs = Files.asCharSource(new File(filePath), Charsets.UTF_8);
 		String headLine;
 		try {
-			headLine = cs.readFirstLine();
+			headLine = cs.readLines().subList(1, 2).get(0);
 			List<String> names = Arrays.asList(headLine.split(","));
 			return new ArrayList<String>(names);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private String readDeviceType(){
+		CharSource cs = Files.asCharSource(new File(filePath), Charsets.UTF_8);
+		String line;
+		try {
+			line = cs.readFirstLine();
+			return line.substring(1).trim();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -53,7 +72,7 @@ public abstract class FileDataProvider implements DataProvider {
 			try {
 				CharSource cs = Files.asCharSource(new File(filePath), Charsets.UTF_8);
 				ImmutableList<String> lines = cs.readLines();
-				lines=lines.subList(1, lines.size());
+				lines=lines.subList(2, lines.size());
 				lines.forEach(line -> {
 					String[] fields = line.split(FIELD_SEPERATOR);
 					DataLine dataLine = new DataLine();

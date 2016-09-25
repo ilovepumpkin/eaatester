@@ -13,6 +13,8 @@ import eaa.tester.data.provider.DataProviderFactory;
 import eaa.tester.event.DataLineChangeEvent;
 import eaa.tester.event.EAAEventBus;
 import eaa.tester.player.DataPlayer;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -39,6 +41,7 @@ public class PlayWindow extends Stage {
 	private DataPlayer player;
 	private TableView table;
 	private List<String> fieldNames;
+	private Label infoLabel;
 	
 	private static final String COLUMN_TIME="[time]";
 
@@ -74,7 +77,7 @@ public class PlayWindow extends Stage {
 		c.add(buildCfgLine("Data source type", MainGUI.getDataSourceTypeLabel(cfg.getDataSourceType())));
 		c.add(buildCfgLine("Broker URL", cfg.getProxyUrl()));
 		c.add(buildCfgLine("Data file", cfg.getDataFilePath()));
-		c.add(buildCfgLine("Interval", String.valueOf(cfg.getInterval())));
+		c.add(buildCfgLine("Interval(ms)", String.valueOf(cfg.getInterval())));
 		c.add(buildCfgLine("Loop count", String.valueOf(cfg.getLoopCount())));
 		return box;
 	}
@@ -113,8 +116,26 @@ public class PlayWindow extends Stage {
 				player.play();
 			}
 		});
+		btnAutoPlay.disableProperty().bind(player.getIsStoppedProperty().not());
+		
 		Button btnNext = new Button("Next");
+		btnNext.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				player.next();
+			}
+		});
+		btnNext.disableProperty().bind(player.getIsStoppedProperty().not());
+		
 		Button btnPause = new Button("Pause");
+		btnPause.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				player.pause();
+			}
+		});
+		btnPause.disableProperty().bind(player.getIsStoppedProperty());
+		
 		Button btnStop = new Button("Stop");
 		btnStop.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -122,13 +143,36 @@ public class PlayWindow extends Stage {
 				player.stop();
 			}
 		});
+		btnStop.disableProperty().bind(player.getIsStoppedProperty());
+		
+		Button btnClear = new Button("Clear");
+		btnClear.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				table.getItems().clear();
+			}
+		});
+		btnClear.disableProperty().bind(player.getIsStoppedProperty().not());
+		
+		infoLabel=new Label();
+		infoLabel.setPrefWidth(300);
+		updateInfo();
+		
 		HBox hbBtn = new HBox();
 		hbBtn.setPrefHeight(50);
 		hbBtn.setSpacing(30);
 		hbBtn.setAlignment(Pos.BOTTOM_CENTER);
-		hbBtn.getChildren().addAll(btnAutoPlay, btnStop, btnPause, btnNext);// 将按钮控件作为子节点
+		hbBtn.getChildren().addAll(infoLabel,btnAutoPlay, btnStop, btnPause, btnNext,btnClear);// 将按钮控件作为子节点
 		hbBtn.setPadding(new Insets(20));
 		return hbBtn;
+	}
+
+	private void updateInfo() {
+		StringBuilder sb=new StringBuilder();
+		sb.append("Current item: "+player.current()+"/"+player.total());
+		sb.append("         ");
+		sb.append("Current loop: "+player.currentLoop()+"/"+player.loopCount());
+		infoLabel.setText(sb.toString());
 	}
 
 	private String getCurrentTime() {
@@ -140,6 +184,12 @@ public class PlayWindow extends Stage {
 	public void handlePublishedData(DataLineChangeEvent dataEvent) {
 		final DataLine dl = dataEvent.getDataLine();
 		dl.put(COLUMN_TIME, getCurrentTime());		
-		table.getItems().add(dl);
+		table.getItems().add(0,dl);
+		Platform.runLater(new Runnable(){
+			@Override
+			public void run() {
+				updateInfo();		
+			}
+		});
 	}
 }

@@ -1,6 +1,5 @@
 package eaa.tester.player;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -10,16 +9,22 @@ import eaa.tester.data.TSDataLine;
 import eaa.tester.data.provider.DataProvider;
 import eaa.tester.event.DataLineChangeEvent;
 import eaa.tester.event.EAAEventBus;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 
 public class DataPlayer {
 	private DataProvider dlProvider;
 	private EventBus eventBus = EAAEventBus.getInstance();
 
-	private boolean isStopped;
+	// private boolean isStopped;
 	private int current;
 	private List<TSDataLine> dataList;
 	private int total;
 	private int loopCount;
+	private int currentLoop = 1;
+
+	private BooleanProperty isStopped = new SimpleBooleanProperty(true);
 
 	public DataPlayer(DataProvider dlProvider) {
 		this(dlProvider, 1);
@@ -29,7 +34,7 @@ public class DataPlayer {
 		this.dlProvider = dlProvider;
 		dataList = this.dlProvider.getDataLines();
 		this.total = dataList.size();
-		this.loopCount=loopCount;
+		this.loopCount = loopCount;
 	}
 
 	public boolean isTillEnd() {
@@ -37,36 +42,43 @@ public class DataPlayer {
 	}
 
 	public void play() {
+		isStopped.set(false);
 		new Thread() {
 			public void run() {
-				while (!(isStopped || isTillEnd())) {
-					next();
+				while (!(isStopped.get() || isTillEnd())) {
+					internalNext(true);
 				}
 			}
 		}.start();
 	}
 
 	public void next() {
+		internalNext(false);
+	}
+
+	public void internalNext(boolean needThink) {
 		final TSDataLine item = this.dataList.get(this.current);
-		try {
-			TimeUnit.MILLISECONDS.sleep(item.getThinkTime());
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		if (needThink) {
+			try {
+				TimeUnit.MILLISECONDS.sleep(item.getThinkTime());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		eventBus.post(new DataLineChangeEvent(item.getDataLine()));
 		this.current += 1;
-		if(isTillEnd() && (--this.loopCount)>0){
-			this.current=0;
+		if (isTillEnd() && this.currentLoop++ <= this.loopCount) {
+			this.current = 0;
 		}
 	}
 
 	public void pause() {
-		this.isStopped = true;
+		this.isStopped.set(true);
 	}
 
 	public void stop() {
 		this.current = 0;
-		this.isStopped = true;
+		this.isStopped.set(true);
 	}
 
 	public int total() {
@@ -76,8 +88,16 @@ public class DataPlayer {
 	public int current() {
 		return this.current;
 	}
+	
+	public int loopCount(){
+		return this.loopCount;
+	}
+	
+	public int currentLoop(){
+		return this.currentLoop;
+	}
 
-	public boolean isStopped() {
+	public BooleanProperty getIsStoppedProperty() {
 		return this.isStopped;
 	}
 }

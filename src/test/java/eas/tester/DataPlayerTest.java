@@ -77,7 +77,7 @@ public class DataPlayerTest {
 		assertEquals(3,player.current());
 		player.stop();
 		assertEquals(0,player.current());
-		assertTrue(player.isStopped());
+		assertTrue(player.getIsStoppedProperty().get());
 	}
 	
 	@Test
