@@ -15,7 +15,7 @@ import eaa.tester.event.EAAEventBus;
 
 public class DataDsLinkTest {
 	private static EventBus eventBus = EAAEventBus.getInstance();
-	private static DataDsLink dslink = new DataDsLink();
+	private static DataDsLink dslink = new DataDsLink("DataDsLinkTest");
 
 	
 	@BeforeClass

@@ -42,6 +42,7 @@ public class PlayWindow extends Stage {
 	private TableView table;
 	private List<String> fieldNames;
 	private Label infoLabel;
+	private DataProvider dp;
 	
 	private static final String COLUMN_TIME="[time]";
 
@@ -49,7 +50,7 @@ public class PlayWindow extends Stage {
 		this.cfg = cfg;
 
 		EAAEventBus.getInstance().register(this);
-		DataProvider dp = DataProviderFactory.getDataProvider(this.cfg);
+		dp = DataProviderFactory.getDataProvider(this.cfg);
 		player = new DataPlayer(dp);
 		fieldNames = dp.getFieldNames();
 
@@ -79,6 +80,7 @@ public class PlayWindow extends Stage {
 		c.add(buildCfgLine("Data file", cfg.getDataFilePath()));
 		c.add(buildCfgLine("Interval(ms)", String.valueOf(cfg.getInterval())));
 		c.add(buildCfgLine("Loop count", String.valueOf(cfg.getLoopCount())));
+		c.add(buildCfgLine("Device type", dp.getDeviceType()));
 		return box;
 	}
 

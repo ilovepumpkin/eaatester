@@ -154,9 +154,10 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 		return true;
 	}
 
-	public DataDsLink() {
+	public DataDsLink(String deviceType) {
 		super();
-		this.devName = "EAATester";
+		this.devType = deviceType;
+		this.devName = this.devType + "_" + System.currentTimeMillis();
 		setProvider(DSLinkFactory.generate(this));
 	}
 
@@ -228,15 +229,15 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 
 	public void start() {
 		new Thread(this).start();
-	    int tryCount=5;
-		while (!isReady() && tryCount-->0) {
+		int tryCount = 5;
+		while (!isReady() && tryCount-- > 0) {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
 		}
-		if(tryCount<=0){
+		if (tryCount <= 0) {
 			throw new RuntimeException("The dslink was not started within the given time.");
 		}
 	}
@@ -259,8 +260,8 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 
 	@Subscribe
 	public void handleDataChange(DataLineChangeEvent dataEvent) {
-		DataLine dl=dataEvent.getDataLine();
-		LOGGER.info("Data line: {}",dl);
+		DataLine dl = dataEvent.getDataLine();
+		LOGGER.info("Data line: {}", dl);
 		dataNode.setValue(new Value(dl));
 	}
 }

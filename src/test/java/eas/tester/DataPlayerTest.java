@@ -46,7 +46,7 @@ public class DataPlayerTest {
 		player.next();
 		player.next();
 		dataListener.assertLast(getExpected("Alex", "38"));
-		assertTrue(player.isTillEnd());
+		assertTrue(player.getIsStoppedProperty().get());
 	}
 	
 	@Test
@@ -55,13 +55,14 @@ public class DataPlayerTest {
 		EAAEventBus.getInstance().register(dataListener);
 		
 		c.setDataFilePath(getDataFilePath("dataplayer_test.csv"));
-		c.setInterval(100);
+		final int interval=100;
+		c.setInterval(interval);
 		c.setDataSourceType(DataProviderFactory.TYPE_SIMPLE_FILE);
 		
 		DataProvider dp = DataProviderFactory.getDataProvider(c);
 		DataPlayer player = new DataPlayer(dp);
 		player.play();
-		TimeUnit.MILLISECONDS.sleep(250);
+		TimeUnit.MILLISECONDS.sleep((long)(interval*2.5));
 		player.pause();
 		ArrayList<HashMap<String,Object>> expectedList=new ArrayList<HashMap<String,Object>>();
 		expectedList.add(getExpected("Tom","11"));
@@ -70,7 +71,7 @@ public class DataPlayerTest {
 		assertEquals(2,player.current());
 		dataListener.clear();
 		player.play();
-		TimeUnit.MILLISECONDS.sleep(150);
+		TimeUnit.MILLISECONDS.sleep((long)(interval*1.5));
 		expectedList.clear();
 		expectedList.add(getExpected("Mike","22"));
 		dataListener.assertAll(expectedList);

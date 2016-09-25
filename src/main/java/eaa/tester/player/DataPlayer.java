@@ -10,7 +10,6 @@ import eaa.tester.data.provider.DataProvider;
 import eaa.tester.event.DataLineChangeEvent;
 import eaa.tester.event.EAAEventBus;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 
 public class DataPlayer {
@@ -19,12 +18,13 @@ public class DataPlayer {
 
 	// private boolean isStopped;
 	private int current;
-	private List<TSDataLine> dataList;
+	private final List<TSDataLine> dataList;
 	private int total;
 	private int loopCount;
 	private int currentLoop = 1;
 
 	private BooleanProperty isStopped = new SimpleBooleanProperty(true);
+	private Thread autoPlayThread;
 
 	public DataPlayer(DataProvider dlProvider) {
 		this(dlProvider, 1);
@@ -37,19 +37,16 @@ public class DataPlayer {
 		this.loopCount = loopCount;
 	}
 
-	public boolean isTillEnd() {
-		return this.current >= this.total;
-	}
-
 	public void play() {
 		isStopped.set(false);
-		new Thread() {
+		autoPlayThread = new Thread() {
 			public void run() {
-				while (!(isStopped.get() || isTillEnd())) {
+				while (!isStopped.get()) {
 					internalNext(true);
 				}
 			}
-		}.start();
+		};
+		autoPlayThread.start();
 	}
 
 	public void next() {
@@ -57,28 +54,36 @@ public class DataPlayer {
 	}
 
 	public void internalNext(boolean needThink) {
-		final TSDataLine item = this.dataList.get(this.current);
-		if (needThink) {
-			try {
+		try {
+			final TSDataLine item = this.dataList.get(this.current);
+			if (needThink) {
 				TimeUnit.MILLISECONDS.sleep(item.getThinkTime());
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
+			eventBus.post(new DataLineChangeEvent(item.getDataLine()));
+			this.current += 1;
+			if (this.current == this.total) {
+				if (this.currentLoop < this.loopCount) {
+					this.current = 0;
+					this.currentLoop += 1;
+				} else {
+					this.isStopped.set(true);
+				}
+			}
+		} catch (InterruptedException e) {
+			// Pause or Stop is clicked.
 		}
-		eventBus.post(new DataLineChangeEvent(item.getDataLine()));
-		this.current += 1;
-		if (isTillEnd() && this.currentLoop++ <= this.loopCount) {
-			this.current = 0;
-		}
+
 	}
 
 	public void pause() {
 		this.isStopped.set(true);
+		autoPlayThread.interrupt();
 	}
 
 	public void stop() {
 		this.current = 0;
 		this.isStopped.set(true);
+		autoPlayThread.interrupt();
 	}
 
 	public int total() {
@@ -88,12 +93,12 @@ public class DataPlayer {
 	public int current() {
 		return this.current;
 	}
-	
-	public int loopCount(){
+
+	public int loopCount() {
 		return this.loopCount;
 	}
-	
-	public int currentLoop(){
+
+	public int currentLoop() {
 		return this.currentLoop;
 	}
 
