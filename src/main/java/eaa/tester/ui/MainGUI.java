@@ -51,7 +51,7 @@ public class MainGUI extends Application {
 	private ReadOnlyObjectProperty intervalProperty;
 	private ReadOnlyObjectProperty loopProperty;
 	private ObjectProperty unitProperty;
-
+	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		// StackPane root = new StackPane();
@@ -139,11 +139,24 @@ public class MainGUI extends Application {
 				new PlayWindow(buildCfg()).show();
 			}
 		});
+		
+		Button btnClose = new Button("Close");
+		btnClose.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				try {
+					stop();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
 		HBox hbBtn = new HBox();
 		hbBtn.setPrefHeight(50);
 		hbBtn.setSpacing(30);
 		hbBtn.setAlignment(Pos.BOTTOM_CENTER);
-		hbBtn.getChildren().addAll(btnLaunch);// 将按钮控件作为子节点
+		hbBtn.getChildren().addAll(btnLaunch,btnClose);// 将按钮控件作为子节点
 		return hbBtn;
 	}
 
@@ -287,6 +300,11 @@ public class MainGUI extends Application {
 		box.getChildren().add(radioHBox);
 
 		return box;
+	}
+	
+	@Override
+	public void stop(){
+		System.exit(0);
 	}
 
 	public static void main(String[] args) {

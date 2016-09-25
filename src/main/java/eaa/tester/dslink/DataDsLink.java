@@ -240,10 +240,12 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 		if (tryCount <= 0) {
 			throw new RuntimeException("The dslink was not started within the given time.");
 		}
+		LOGGER.info("Started");
 	}
 
 	public void stop() {
 		this.status = NODE_STATUS.DONE;
+		LOGGER.info("Stopped");
 	}
 
 	public boolean isReady() {
@@ -251,7 +253,7 @@ public class DataDsLink extends DSLinkHandler implements Runnable {
 	}
 
 	private void addNodes(Node superRoot) {
-		NodeBuilder builder = superRoot.createChild("EAATesterType");
+		NodeBuilder builder = superRoot.createChild("EAATesterData");
 		builder.setDisplayName("EAATesterType");
 		builder.setValueType(ValueType.MAP);
 		dataNode = builder.build();

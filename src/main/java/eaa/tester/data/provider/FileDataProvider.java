@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
@@ -29,7 +30,9 @@ public abstract class FileDataProvider implements DataProvider {
 	}
 
 	public List<String> getFieldNames() {
-		return this.fieldNames;
+		List<String> names= this.fieldNames;
+		names=names.stream().filter(x->!(x.startsWith("[") && x.endsWith("]"))).collect(Collectors.toList());
+		return names;
 	}
 	
 	public String getDeviceType(){
@@ -57,7 +60,7 @@ public abstract class FileDataProvider implements DataProvider {
 		String line;
 		try {
 			line = cs.readFirstLine();
-			return line.substring(1).trim();
+			return line.substring(1).replaceAll(",", "").trim();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

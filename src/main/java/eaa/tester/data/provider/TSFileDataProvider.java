@@ -8,7 +8,7 @@ import eaa.tester.data.TSDataLine;
 
 public class TSFileDataProvider extends FileDataProvider {
 
-	private final static String FIELD_NAME_TIMELINE = "timeline";
+	private final static String FIELD_NAME_TIMELINE = "[timeline]";
 	private final static String TIMELINE_DELIMITOR="\\.";
 	
 	private long prevTime = 0;

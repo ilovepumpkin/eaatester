@@ -83,7 +83,9 @@ public class DataPlayer {
 	public void stop() {
 		this.current = 0;
 		this.isStopped.set(true);
-		autoPlayThread.interrupt();
+		if (autoPlayThread != null) {
+			autoPlayThread.interrupt();
+		}
 	}
 
 	public int total() {

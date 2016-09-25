@@ -9,7 +9,20 @@
     "$is" : "node",
     "$type" : "map",
     "?value" : {
-      "value" : 9
+      "timeline" : "02.01.05",
+      "name" : "Mike",
+      "age" : "22",
+      "[time]" : "21:47:34"
+    }
+  },
+  "EAATesterData" : {
+    "$name" : "EAATesterType",
+    "$is" : "node",
+    "$type" : "map",
+    "?value" : {
+      "name" : "Tom",
+      "age" : "11",
+      "[time]" : "22:34:35"
     }
   }
 }

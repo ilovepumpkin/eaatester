@@ -10,6 +10,7 @@ import eaa.tester.conf.Configuration;
 import eaa.tester.data.DataLine;
 import eaa.tester.data.provider.DataProvider;
 import eaa.tester.data.provider.DataProviderFactory;
+import eaa.tester.dslink.DataDsLink;
 import eaa.tester.event.DataLineChangeEvent;
 import eaa.tester.event.EAAEventBus;
 import eaa.tester.player.DataPlayer;
@@ -34,6 +35,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
 public class PlayWindow extends Stage {
@@ -43,6 +45,7 @@ public class PlayWindow extends Stage {
 	private List<String> fieldNames;
 	private Label infoLabel;
 	private DataProvider dp;
+	private DataDsLink dslink;
 	
 	private static final String COLUMN_TIME="[time]";
 
@@ -51,8 +54,12 @@ public class PlayWindow extends Stage {
 
 		EAAEventBus.getInstance().register(this);
 		dp = DataProviderFactory.getDataProvider(this.cfg);
-		player = new DataPlayer(dp);
+		player = new DataPlayer(dp, this.cfg.getLoopCount());
 		fieldNames = dp.getFieldNames();
+		
+		dslink = new DataDsLink(dp.getDeviceType());
+		EAAEventBus.getInstance().register(dslink);
+		dslink.start();
 
 		initModality(Modality.APPLICATION_MODAL);
 
@@ -70,6 +77,18 @@ public class PlayWindow extends Stage {
 		Scene scene = new Scene(root, 300, 275);
 		setTitle("Player Window");
 		setScene(scene);
+		
+		setOnCloseRequest(new EventHandler<WindowEvent>(){
+			@Override
+			public void handle(WindowEvent event) {
+				onCloseWindow();
+			}
+		});
+	}
+	
+	private void onCloseWindow(){
+		dslink.stop();
+		player.stop();
 	}
 
 	private Node buildCfgDisplay() {
@@ -95,7 +114,6 @@ public class PlayWindow extends Stage {
 
 	private Node buildTable(List<String> columnNames) {
 		table = new TableView();
-		//table.getColumns().add(new TableColumn("Time"));
 		columnNames.add(0,COLUMN_TIME);
 		columnNames.stream().forEach(name -> {
 			TableColumn col = new TableColumn(name);
@@ -156,6 +174,15 @@ public class PlayWindow extends Stage {
 		});
 		btnClear.disableProperty().bind(player.getIsStoppedProperty().not());
 		
+		Button btnClose = new Button("Close");
+		btnClose.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				onCloseWindow();
+				close();
+			}
+		});
+		
 		infoLabel=new Label();
 		infoLabel.setPrefWidth(300);
 		updateInfo();
@@ -164,14 +191,14 @@ public class PlayWindow extends Stage {
 		hbBtn.setPrefHeight(50);
 		hbBtn.setSpacing(30);
 		hbBtn.setAlignment(Pos.BOTTOM_CENTER);
-		hbBtn.getChildren().addAll(infoLabel,btnAutoPlay, btnStop, btnPause, btnNext,btnClear);// 将按钮控件作为子节点
+		hbBtn.getChildren().addAll(infoLabel,btnAutoPlay, btnStop, btnPause, btnNext,btnClear,btnClose);// 将按钮控件作为子节点
 		hbBtn.setPadding(new Insets(20));
 		return hbBtn;
 	}
 
 	private void updateInfo() {
 		StringBuilder sb=new StringBuilder();
-		sb.append("Current item: "+player.current()+"/"+player.total());
+		sb.append("Current item: "+(player.current()+1)+"/"+player.total());
 		sb.append("         ");
 		sb.append("Current loop: "+player.currentLoop()+"/"+player.loopCount());
 		infoLabel.setText(sb.toString());
@@ -186,7 +213,7 @@ public class PlayWindow extends Stage {
 	public void handlePublishedData(DataLineChangeEvent dataEvent) {
 		final DataLine dl = dataEvent.getDataLine();
 		dl.put(COLUMN_TIME, getCurrentTime());		
-		table.getItems().add(0,dl);
+		table.getItems().add(dl);
 		Platform.runLater(new Runnable(){
 			@Override
 			public void run() {
@@ -194,4 +221,6 @@ public class PlayWindow extends Stage {
 			}
 		});
 	}
+	
+
 }
